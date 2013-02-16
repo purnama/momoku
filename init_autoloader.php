@@ -45,7 +45,7 @@ if ($zf2Path) {
 }
 
 if (isset($loader)) {
-    $loader->add('Momoku', __DIR__.'/lib' );
+    $loader->add('Momoku', __DIR__.'/lib/main' );
 }
 
 if (!class_exists('Zend\Loader\AutoloaderFactory')) {
