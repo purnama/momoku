@@ -22,44 +22,16 @@
  * @link    http://github.com/purnama/momoku
  * @copyright Copyright (c) 2013 Momoku (http://github.com/purnama/momoku)
  */
-namespace Momoku\Ioc\Provider;
+namespace Momoku\Dao;
 
-use net\stubbles\ioc\InjectionProvider;
-use net\stubbles\lang\BaseObject;
+use Doctrine\ORM\ORMInvalidArgumentException;
 /**
- * Provider to create Entity Manager Instance
  *
  * @author  Arthur Purnama <arthur@purnama.de>
  */
-class EntityManager extends BaseObject implements InjectionProvider
+class InvalidEntityException extends ORMInvalidArgumentException
 {
-    /**
-     * @var array
-     */
-    private $configuration;
-
-    /**
-     * Constructor
-     *
-     * @Inject
-     * @Named('ApplicationConfiguration')
-     * @param $configuration Application Configuration
-     */
-    public function __construct($configuration){
-        $this->configuration = $configuration['doctrine'];
-    }
-
-    /**
-     * returns the value to provide
-     *
-     * @param   string  $name
-     * @return  \Doctrine\ORM\EntityManager
-     */
-    public function get($name = null)
-    {
-        return \Doctrine\ORM\EntityManager::create(
-            $this->configuration['database'],
-            \Doctrine\ORM\Tools\Setup::createAnnotationMetadataConfiguration($this->configuration['metadata'],
-                $_SERVER['APPLICATION_ENV'] === 'development'));
+    public function __construct($entity, $expectedEntityName){
+        parent::__construct('Expects parameter to be "'.$expectedEntityName.'" object, "'.gettype($entity).'" given.');
     }
 }

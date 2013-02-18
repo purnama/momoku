@@ -22,44 +22,32 @@
  * @link    http://github.com/purnama/momoku
  * @copyright Copyright (c) 2013 Momoku (http://github.com/purnama/momoku)
  */
-namespace Momoku\Ioc\Provider;
+namespace Application\Controller;
 
-use net\stubbles\ioc\InjectionProvider;
-use net\stubbles\lang\BaseObject;
 /**
- * Provider to create Entity Manager Instance
  *
  * @author  Arthur Purnama <arthur@purnama.de>
  */
-class EntityManager extends BaseObject implements InjectionProvider
-{
-    /**
-     * @var array
-     */
-    private $configuration;
+use Zend\Test\PHPUnit\Controller\AbstractHttpControllerTestCase;
 
-    /**
-     * Constructor
-     *
-     * @Inject
-     * @Named('ApplicationConfiguration')
-     * @param $configuration Application Configuration
-     */
-    public function __construct($configuration){
-        $this->configuration = $configuration['doctrine'];
+class IndexControllerTest extends AbstractHttpControllerTestCase
+{
+    public function setUp()
+    {
+        $this->setApplicationConfig(
+            include 'config/application.config.php'
+        );
+        parent::setUp();
     }
 
-    /**
-     * returns the value to provide
-     *
-     * @param   string  $name
-     * @return  \Doctrine\ORM\EntityManager
-     */
-    public function get($name = null)
+    public function testIndexActionCanBeAccessed()
     {
-        return \Doctrine\ORM\EntityManager::create(
-            $this->configuration['database'],
-            \Doctrine\ORM\Tools\Setup::createAnnotationMetadataConfiguration($this->configuration['metadata'],
-                $_SERVER['APPLICATION_ENV'] === 'development'));
+        $this->dispatch('/');
+        $this->assertResponseStatusCode(200);
+
+        $this->assertModuleName('application');
+        $this->assertControllerName('application\controller\index');
+        $this->assertControllerClass('IndexController');
+        $this->assertMatchedRouteName('home');
     }
 }

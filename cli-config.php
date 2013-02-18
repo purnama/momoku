@@ -22,44 +22,38 @@
  * @link    http://github.com/purnama/momoku
  * @copyright Copyright (c) 2013 Momoku (http://github.com/purnama/momoku)
  */
-namespace Momoku\Ioc\Provider;
 
-use net\stubbles\ioc\InjectionProvider;
-use net\stubbles\lang\BaseObject;
+
 /**
- * Provider to create Entity Manager Instance
  *
  * @author  Arthur Purnama <arthur@purnama.de>
  */
-class EntityManager extends BaseObject implements InjectionProvider
-{
-    /**
-     * @var array
-     */
-    private $configuration;
-
-    /**
-     * Constructor
-     *
-     * @Inject
-     * @Named('ApplicationConfiguration')
-     * @param $configuration Application Configuration
-     */
-    public function __construct($configuration){
-        $this->configuration = $configuration['doctrine'];
-    }
-
-    /**
-     * returns the value to provide
-     *
-     * @param   string  $name
-     * @return  \Doctrine\ORM\EntityManager
-     */
-    public function get($name = null)
-    {
-        return \Doctrine\ORM\EntityManager::create(
-            $this->configuration['database'],
-            \Doctrine\ORM\Tools\Setup::createAnnotationMetadataConfiguration($this->configuration['metadata'],
-                $_SERVER['APPLICATION_ENV'] === 'development'));
-    }
+// Setup autoloading
+if (file_exists('vendor/autoload.php')) {
+    $loader = include 'vendor/autoload.php';
 }
+
+if (isset($loader)) {
+    $loader->add('Momoku', __DIR__.'/lib/main' );
+    $loader->add('Demo', __DIR__.'/lib/main' );
+}
+
+$_SERVER['APPLICATION_ENV'] = 'development';
+
+use net\stubbles\ioc\Binder;
+use net\stubbles\ioc\binding\BindingScopes;
+use Momoku\Ioc\Binding\BindingIndex;
+use Momoku\Ioc\Binding\SessionBindingScope;
+
+$binder = new Binder(new BindingIndex(new BindingScopes(null, new SessionBindingScope())));
+$configuration = require 'config/application.config.php';
+$binder->bindConstant('ApplicationConfiguration')->to($configuration);
+foreach($configuration['providers'] as $impl => $providerClass){
+    $binder->bind($impl)->toProviderClass($providerClass);
+}
+
+$entityManager = $binder->getInjector()->getInstance('Doctrine\ORM\EntityManager');
+
+$helperSet = new \Symfony\Component\Console\Helper\HelperSet(array(
+    'em' => new \Doctrine\ORM\Tools\Console\Helper\EntityManagerHelper($entityManager)
+));

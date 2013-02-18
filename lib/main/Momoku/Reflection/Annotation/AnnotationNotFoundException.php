@@ -22,44 +22,18 @@
  * @link    http://github.com/purnama/momoku
  * @copyright Copyright (c) 2013 Momoku (http://github.com/purnama/momoku)
  */
-namespace Momoku\Ioc\Provider;
+namespace Momoku\Reflection\Annotation;
 
-use net\stubbles\ioc\InjectionProvider;
-use net\stubbles\lang\BaseObject;
+use Doctrine\Common\Annotations\AnnotationException;
+
 /**
- * Provider to create Entity Manager Instance
  *
  * @author  Arthur Purnama <arthur@purnama.de>
  */
-class EntityManager extends BaseObject implements InjectionProvider
+class AnnotationNotFoundException extends AnnotationException
 {
-    /**
-     * @var array
-     */
-    private $configuration;
-
-    /**
-     * Constructor
-     *
-     * @Inject
-     * @Named('ApplicationConfiguration')
-     * @param $configuration Application Configuration
-     */
-    public function __construct($configuration){
-        $this->configuration = $configuration['doctrine'];
-    }
-
-    /**
-     * returns the value to provide
-     *
-     * @param   string  $name
-     * @return  \Doctrine\ORM\EntityManager
-     */
-    public function get($name = null)
+    public function __construct($annotationName)
     {
-        return \Doctrine\ORM\EntityManager::create(
-            $this->configuration['database'],
-            \Doctrine\ORM\Tools\Setup::createAnnotationMetadataConfiguration($this->configuration['metadata'],
-                $_SERVER['APPLICATION_ENV'] === 'development'));
+        parent::__construct("Annotation with name " . $annotationName . " is not found.");
     }
 }
